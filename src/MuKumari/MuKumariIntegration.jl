@@ -11,6 +11,7 @@ using VulcanJ: AbstractInfoMCTS, AbstractErgodicSolver, RiskBoundedInfoPolicy,
 using MuKumari: MuKumari
 import POMDPs: action
 using POMDPTools: Deterministic, stepthrough
+using POMDPs: Policy
 import VulcanJ: simulate_info_path
 
 const KProblem = Union{MuKumari.KAgentMDP,MuKumari.KAgentPOMDP}
@@ -84,8 +85,22 @@ function VulcanJ.simulate_info_path(problem::MuKumari.KAgentMDP,
         push!(states,sp); push!(taken,a); push!(observations,step.observation)
         push!(rewards,step.gain); push!(risks,step.risk)
     end
+    VulcanJ.finish_simulation!(policy, states, observations; update_model)
     return (;states, actions=taken, observations, information_rewards=rewards, risks,
              model=policy.model, policy)
+end
+
+# Playback also uses MuKumari's native POMDPTools simulator.
+function VulcanJ.simulate_info_path(problem::MuKumari.KAgentMDP, policy::Policy, n_steps::Integer;
+    initial_state, model, rng=VulcanJ.GLOBAL_RNG, observe_fn=(p,s)->MuKumari.z(s))
+    states, taken, observations = Any[initial_state], Any[], Any[]
+    for (s,a,sp) in stepthrough(problem,policy,initial_state,"s,a,sp";rng,max_steps=n_steps)
+        push!(states,sp)
+        push!(taken,a)
+        push!(observations,observe_fn(problem,sp))
+    end
+    model = VulcanJ.condition_environment_model_batch(problem,model,states[2:end],observations)
+    return (;states, actions=taken, observations, model)
 end
 
 end

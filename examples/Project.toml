@@ -1,4 +1,5 @@
 [deps]
+POMDPTools = "7588e00f-9cae-40de-98dc-e0c70c48cdd7"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 GaussianProcesses = "891a1506-143c-57d2-908e-e1f8e92e6de9"
 POMDPs = "a93abf59-7444-517b-a68a-c42f96afdd7d"
@@ -8,7 +9,7 @@ VulcanJ = "4dff405b-345f-4980-ad9a-8a8da005ecf3"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MuKumari = "28f59e21-8c37-415f-8237-13dbde849877"
 SCRIBE = "9d033a4c-5281-4799-847b-6fce4a2de302"
-VulcanJIntegrations = "53bda6c3-31fc-4a1a-87c9-fcc95555bda5"
+VulcanJIntegrations = "3b07cdd2-6275-4a83-bd5c-4b3bbdafbd6b"
 
 [sources]
 VulcanJ = {path = "../../VulcanJ"}

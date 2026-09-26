@@ -11,7 +11,7 @@ function mukumari_problem(sensor;obstacles=false,risk_probability)
         dimensions=(0.,10.),objl=landscape,menv=MuEnv(1,[:signal],Dict(:signal=>sensor)),
         digits=3,agent_width=0.1,agent_speed=1.0,ag_mvt_noise=0.,obs_noise=0.)
     risk=extract_obstacle_risk(problem; probability=risk_probability)
-    settings[problem]=(;risk,polygons)
+    settings[problem]=(;risk,polygons,truth=sensor)
     state=MuKumari.blindstart_KAgentState(problem,problem.start)
     return problem,state
 end
@@ -38,3 +38,5 @@ function setup_mukumari_scribe(;obstacles=false,risk_probability)
     problem,state=mukumari_problem(X->predict_SCRIBEModel(truth,X);obstacles,risk_probability)
     return problem,state,prior
 end
+
+ground_truth(p::KAgentMDP,X) = settings[p].truth(X)

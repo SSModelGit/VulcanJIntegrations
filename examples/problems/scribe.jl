@@ -23,6 +23,7 @@ struct FieldState
 end
 struct FieldProblem <: MDP{FieldState,Symbol}
     sensor::Function
+    truth::Function
     steps::Int
     risk_scale::Float64
 end
@@ -44,15 +45,18 @@ function POMDPs.gen(p::FieldProblem,s,a,rng)
     return (sp=FieldState(X,[s.history;(location=X,observation=y)]),r=0.)
 end
 VulcanJ.generative_problem(p::FieldProblem,m,rng) =
-    FieldProblem((X,r)->rand(r,conditional_observation_distribution(p,m,X)),p.steps,p.risk_scale)
+    FieldProblem((X,r)->rand(r,conditional_observation_distribution(p,m,X)),p.truth,p.steps,p.risk_scale)
 VulcanJ.get_failure_prob(p::FieldProblem,s,a) =
     p.risk_scale*(0.002+0.015exp(-sum(abs2,field_step(s,a)-[0.5 0.45])/0.04))
 initial_reading(s::FieldState) = last(s.history).observation
 function setup_scribe(;steps=60,risk_scale=0.,rng=MersenneTwister(7))
     prior,truth=scribe_models()
-    problem=FieldProblem((X,r)->[predict_SCRIBEModel(truth,X)+0.1randn(r)],steps,risk_scale)
+    truth_field=X->predict_SCRIBEModel(truth,X)
+    problem=FieldProblem((X,r)->[truth_field(X)+0.1randn(r)],truth_field,steps,risk_scale)
     X=[0.15 0.2]
     state=FieldState(X,[(location=X,observation=problem.sensor(X,rng))])
     return problem,state,prior
 end
 obstacle_polygons(::FieldProblem) = []
+
+ground_truth(p::FieldProblem,X) = p.truth(X)

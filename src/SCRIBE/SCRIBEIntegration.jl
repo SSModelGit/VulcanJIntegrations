@@ -2,11 +2,11 @@ module SCRIBEIntegration
 
 import VulcanJ
 import VulcanJ: set_environment_model!, conditional_observation_distribution,
-    observation_outcomes, condition_environment_model, information_gain,
+    observation_outcomes, condition_environment_model, condition_environment_model_batch, information_gain,
     expected_information_gain
 
 export set_environment_model!, conditional_observation_distribution,
-    observation_outcomes, condition_environment_model, information_gain,
+    observation_outcomes, condition_environment_model, condition_environment_model_batch, information_gain,
     expected_information_gain
 using VulcanJ: RiskBoundedInfoPolicy, ErgodicPolicy, cellsites
 using SCRIBE: SCRIBE, SCRIBEModel, SCRIBEModelState
@@ -71,6 +71,14 @@ for PolicyType in (RiskBoundedInfoPolicy, ErgodicPolicy)
         model::SCRIBEModel; information, R, kwargs...)
         return set_environment_model!(policy, state, SCRIBEModelState(model, information, R); kwargs...)
     end
+end
+
+function VulcanJ.condition_environment_model_batch(problem, m::SCRIBEModelState, states, observations)
+    isempty(observations) && return m
+    locations = reduce(vcat, VulcanJ.extract_location.(states))
+    values = reduce(vcat, observations)
+    info = SCRIBE.condition_on_measurement(m.smodel, m.information, locations, values, m.R)
+    return SCRIBEModelState(m.smodel, info, m.R)
 end
 
 end
